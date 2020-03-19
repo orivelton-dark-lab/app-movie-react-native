@@ -2,4 +2,5 @@ App Movie Tutorial
 
 https://youtu.be/aZYCEGyMIN0
 
-![alt text][assets/Screenshot 2020-03-19 at 3.38.12 PM.png]
+![alt text]( https://github.com/oriveltons-lab/app-movie-react-native/blob/master/assets/Screenshot%202020-03-19%20at%203.38.12%20PM.png?raw=true "Logo Title Text 1")
+![]()
