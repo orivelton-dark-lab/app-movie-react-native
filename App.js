@@ -37,6 +37,7 @@ export default function App() {
       });
     });
   }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Movie DB</Text>
