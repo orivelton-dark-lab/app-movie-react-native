@@ -1,9 +1,18 @@
-import React, {useState} from 'react';
+import React, { useState  } from 'react';
 import axios from 'axios';
-import { StyleSheet, Text, View, TextInput, ScrollView, Image } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  ScrollView,
+  Image,
+  TouchableHighlight,
+  Modal
+} from 'react-native';
 
 export default function App() {
-  const apiUrl = 'http://www.omdbapi.com/?i=tt3896198&apikey=683042a2';
+  const apiUrl = 'http://www.omdbapi.com/?apikey=683042a2';
   const [state, setState] = useState({
     s: 'Enter a movie',
     results: [],
@@ -11,17 +20,27 @@ export default function App() {
   });
 
   const search = () => {
-    axios(`${apiUrl}&s=${state.s}`).then(({data}) => {
-      let results = data.Search;
-      setState(prevState => {
+    state.s && axios(`${apiUrl}&s=${state.s}`).then(({data}) => {
+      const { Search: results, Error: error } = data;
+      
+      !error && setState(prevState => {
         return {...prevState, results }
       });
     });
   };
 
+  const openPopup = id => {
+    axios(`${apiUrl}&i=${id}`).then(({data}) => {
+      let result = data;
+      setState(prevState => {
+        return {...prevState, selected: result }
+      });
+    });
+  }
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Movie DB</Text>
+      
       <TextInput 
         style={styles.searchbox}
         onChangeText={text => setState(prevState => {
@@ -33,19 +52,43 @@ export default function App() {
       <ScrollView style={styles.results}>
         {
           state.results.map(result => (
-            <View key={result.imdbID} style={styles.result}>
-              <Image 
-                source={{ uri: result.Poster }}
-                style={{ width: '100%', height: 300, marginHorizontal: 'auto' }}
-                resizeMode="cover"
-              />
-              <Text style={styles.heading}>
-                {result.Title}
-              </Text>
-            </View>
+            <TouchableHighlight
+              key={result.imdbID}
+              onPress={() => openPopup(result.imdbID)}
+            > 
+              <View style={styles.result}>
+                <Image 
+                  source={{ uri: result.Poster }}
+                  style={{ width: '100%', height: 300, marginHorizontal: 'auto' }}
+                  resizeMode="cover"
+                />
+                <Text style={styles.heading}> 
+                  {result.Title}
+                </Text>
+              </View>
+            </TouchableHighlight>
           ))
         }
       </ScrollView>
+
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={(typeof state.selected.Title != "undefined")}
+      >
+        <View style={styles.popup}>
+          <Text style={styles.poptitle}>{state.selected.Title}</Text>
+          <Text style={{marginBottom: 20}}>Rating: {state.selected.imdbRating}</Text>
+          <Text style={{marginBottom: 20}}>Plot: {state.selected.Plot}</Text>
+          <TouchableHighlight
+            onPress={() => setState(prevState => {
+              return {...prevState, selected: {}}
+            })}
+          >
+            <Text style={styles.closeBtn}>{'< Back'}</Text>
+          </TouchableHighlight>
+        </View>
+      </Modal>
     </View>
 
   );
@@ -90,5 +133,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     padding: 20,
     backgroundColor: '#445565'
+  },
+  popup: {
+    padding: 20,
+    paddingTop: 100
+  },
+  poptitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 5
+  },
+  closeBtn: {
+    padding: 20,
+    fontSize: 20,
+    color: '#FFFFFF',
+    fontWeight: '700',
+    backgroundColor: '#2484c4'
   }
 });
