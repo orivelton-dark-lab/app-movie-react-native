@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import axios from 'axios';
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TextInput, ScrollView, Image } from 'react-native';
 
 export default function App() {
   const apiUrl = 'http://www.omdbapi.com/?i=tt3896198&apikey=683042a2';
@@ -10,6 +10,15 @@ export default function App() {
     selected: {}
   });
 
+  const search = () => {
+    axios(`${apiUrl}&s=${state.s}`).then(({data}) => {
+      let results = data.Search;
+      setState(prevState => {
+        return {...prevState, results }
+      });
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Movie DB</Text>
@@ -18,9 +27,27 @@ export default function App() {
         onChangeText={text => setState(prevState => {
           return {...prevState, s: text}
         })}
+        onSubmitEditing={search}
         value={state.s}
       />
+      <ScrollView style={styles.results}>
+        {
+          state.results.map(result => (
+            <View key={result.imdbID} style={styles.result}>
+              <Image 
+                source={{ uri: result.Poster }}
+                style={{ width: '100%', height: 300, marginHorizontal: 'auto' }}
+                resizeMode="cover"
+              />
+              <Text style={styles.heading}>
+                {result.Title}
+              </Text>
+            </View>
+          ))
+        }
+      </ScrollView>
     </View>
+
   );
 }
 
@@ -48,5 +75,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     marginBottom: 40
+  },
+  results: {
+    flex: 1
+  },
+  result: {
+    flex: 1,
+    width: '100%',
+    marginBottom: 20
+  },
+  heading: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '700',
+    padding: 20,
+    backgroundColor: '#445565'
   }
 });
